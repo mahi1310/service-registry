@@ -1,0 +1,58 @@
+pipeline {
+    agent any  // Use any available agent for running the pipeline
+
+    tools {
+        maven 'my-maven'  // Specify your Maven installation
+        jdk 'my-jdk'      // Specify your JDK installation
+    }
+
+    stages {
+        stage('Clone') {
+            steps {
+                // Clone the repository containing the Spring Boot application
+                git url: 'https://github.com/your-username/your-springboot-app.git', branch: 'main'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Build the application using Maven, skipping tests for faster builds
+                bat 'mvn clean install -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Run unit tests with Maven
+                bat 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                // Package the Spring Boot application as a JAR file
+                bat 'mvn package'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Deploy the application to your preferred environment (e.g., Docker, AWS, etc.)
+                // This example uses Docker to build and run the application
+                bat 'docker build -t springboot-app .'
+                bat 'docker run -p 8080:8080 -d --name springboot-container springboot-app'
+            }
+        }
+    }
+
+    post {
+        success {
+            // Actions to take on successful build
+            echo 'Build and Deployment Successful!'
+        }
+        failure {
+            // Actions to take on build failure
+            echo 'Build Failed!'
+        }
+    }
+}
